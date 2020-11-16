@@ -1274,7 +1274,8 @@ func TestFunctionRegistration(t *testing.T) {
 		return int64(len(a))
 	}
 
-	sql.Register("sqlite3_FunctionRegistration", &SQLiteDriver{
+	const driverName = "sqlite3_FunctionRegistration"
+	registerIfNeeded(driverName, &SQLiteDriver{
 		ConnectHook: func(conn *SQLiteConn) error {
 			if err := conn.RegisterFunc("addi8_16_32", addi8_16_32, true); err != nil {
 				return err
@@ -1312,7 +1313,7 @@ func TestFunctionRegistration(t *testing.T) {
 			return nil
 		},
 	})
-	db, err := sql.Open("sqlite3_FunctionRegistration", ":memory:")
+	db, err := sql.Open(driverName, ":memory:")
 	if err != nil {
 		t.Fatal("Failed to open database:", err)
 	}
@@ -1369,12 +1370,13 @@ func TestAggregatorRegistration(t *testing.T) {
 		return &ret
 	}
 
-	sql.Register("sqlite3_AggregatorRegistration", &SQLiteDriver{
+	const driverName = "sqlite3_AggregatorRegistration"
+	registerIfNeeded(driverName, &SQLiteDriver{
 		ConnectHook: func(conn *SQLiteConn) error {
 			return conn.RegisterAggregator("customSum", customSum, true)
 		},
 	})
-	db, err := sql.Open("sqlite3_AggregatorRegistration", ":memory:")
+	db, err := sql.Open(driverName, ":memory:")
 	if err != nil {
 		t.Fatal("Failed to open database:", err)
 	}
@@ -1429,7 +1431,8 @@ func TestCollationRegistration(t *testing.T) {
 		return collateRot13(b, a)
 	}
 
-	sql.Register("sqlite3_CollationRegistration", &SQLiteDriver{
+	const driverName = "sqlite3_CollationRegistration"
+	registerIfNeeded(driverName, &SQLiteDriver{
 		ConnectHook: func(conn *SQLiteConn) error {
 			if err := conn.RegisterCollation("rot13", collateRot13); err != nil {
 				return err
@@ -1441,7 +1444,7 @@ func TestCollationRegistration(t *testing.T) {
 		},
 	})
 
-	db, err := sql.Open("sqlite3_CollationRegistration", ":memory:")
+	db, err := sql.Open(driverName, ":memory:")
 	if err != nil {
 		t.Fatal("Failed to open database:", err)
 	}
@@ -1586,7 +1589,7 @@ func TestUpdateAndTransactionHooks(t *testing.T) {
 	var events []string
 	var commitHookReturn = 0
 
-	sql.Register("sqlite3_UpdateHook", &SQLiteDriver{
+	driverName := registerNew("sqlite3_UpdateHook", &SQLiteDriver{
 		ConnectHook: func(conn *SQLiteConn) error {
 			conn.RegisterCommitHook(func() int {
 				events = append(events, "commit")
@@ -1601,7 +1604,7 @@ func TestUpdateAndTransactionHooks(t *testing.T) {
 			return nil
 		},
 	})
-	db, err := sql.Open("sqlite3_UpdateHook", ":memory:")
+	db, err := sql.Open(driverName, ":memory:")
 	if err != nil {
 		t.Fatal("Failed to open database:", err)
 	}
@@ -1646,7 +1649,7 @@ func TestUpdateAndTransactionHooks(t *testing.T) {
 func TestAuthorizer(t *testing.T) {
 	var authorizerReturn = 0
 
-	sql.Register("sqlite3_Authorizer", &SQLiteDriver{
+	driverName := registerNew("sqlite3_Authorizer", &SQLiteDriver{
 		ConnectHook: func(conn *SQLiteConn) error {
 			conn.RegisterAuthorizer(func(op int, arg1, arg2, arg3 string) int {
 				return authorizerReturn
@@ -1654,7 +1657,7 @@ func TestAuthorizer(t *testing.T) {
 			return nil
 		},
 	})
-	db, err := sql.Open("sqlite3_Authorizer", ":memory:")
+	db, err := sql.Open(driverName, ":memory:")
 	if err != nil {
 		t.Fatal("Failed to open database:", err)
 	}

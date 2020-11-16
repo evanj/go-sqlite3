@@ -252,11 +252,9 @@ func TestBackupAllRemainingPages(t *testing.T) {
 
 // Test the error reporting when preparing to perform a backup.
 func TestBackupError(t *testing.T) {
-	const driverName = "sqlite3_TestBackupError"
-
 	// The driver's connection will be needed in order to perform the backup.
 	var dbDriverConn *SQLiteConn
-	sql.Register(driverName, &SQLiteDriver{
+	driverName := registerNew("sqlite3_TestBackupError", &SQLiteDriver{
 		ConnectHook: func(conn *SQLiteConn) error {
 			dbDriverConn = conn
 			return nil
